@@ -7102,6 +7102,28 @@
             }
         });
 
+        parser.addCommand("scroll", function (parser, runtime, tokens) {
+            if (tokens.matchToken("scroll")) {
+                var elementExpr = parser.requireElement("expression", tokens);
+                var behavior = tokens.matchToken('smoothly') ? "smooth" : "auto";
+                tokens.matchToken("to");
+                var direction = tokens.matchAnyToken("top", "bottom");
+                var scrollCmd = {
+                    expr: elementExpr,
+                    direction: direction,
+                    args: [elementExpr, direction, behavior],
+                    op: function (ctx, elementExpr, direction, behavior) {
+                        runtime.implicitLoop(elementExpr, function (target) {
+                            console.log(direction);
+                            target.scroll({ top: direction.value === "top" ? 0 : target.scrollHeight, left: 0, behavior: behavior });
+                        });
+                        return runtime.findNext(this, ctx);
+                    },
+                };
+                return scrollCmd;
+            }
+        });
+
         config.conversions.dynamicResolvers.push(function (str, node) {
             if (!(str === "Values" || str.indexOf("Values:") === 0)) {
                 return;
